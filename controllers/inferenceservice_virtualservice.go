@@ -19,6 +19,7 @@ import (
 	"context"
 	"reflect"
 
+	predictorv1 "github.com/kserve/modelmesh-serving/apis/serving/v1alpha1"
 	inferenceservicev1 "github.com/kserve/modelmesh-serving/apis/serving/v1beta1"
 	"istio.io/api/meta/v1alpha1"
 	"istio.io/api/networking/v1alpha3"
@@ -77,13 +78,32 @@ func (r *OpenshiftInferenceServiceReconciler) reconcileVirtualService(inferences
 	// Initialize logger format
 	log := r.Log.WithValues("inferenceservice", inferenceservice.Name, "namespace", inferenceservice.Namespace)
 
+	desiredServingRuntime := &predictorv1.ServingRuntime{}
+	err := r.Get(ctx, types.NamespacedName{
+		Name:      *inferenceservice.Spec.Predictor.Model.Runtime,
+		Namespace: inferenceservice.Namespace,
+	}, desiredServingRuntime)
+	if err != nil {
+		if apierrs.IsNotFound(err) {
+			log.Info("Serving Runtime ", *inferenceservice.Spec.Predictor.Model.Runtime, " desired by ", inferenceservice.Name, "was not found in namespace")
+		}
+	}
+
+	createRoute := true
+	if desiredServingRuntime.Annotations["enable-route"] != "true" {
+		createRoute = false
+	}
+	if !createRoute {
+		return nil
+	}
+
 	// Generate the desired VirtualService
 	desiredVirtualService := newVirtualService(inferenceservice)
 
 	// Create the VirtualService if it does not already exist
 	foundVirtualService := &virtualservicev1.VirtualService{}
 	justCreated := false
-	err := r.Get(ctx, types.NamespacedName{
+	err = r.Get(ctx, types.NamespacedName{
 		Name:      desiredVirtualService.Name,
 		Namespace: inferenceservice.Namespace,
 	}, foundVirtualService)

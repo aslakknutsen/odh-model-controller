@@ -17,10 +17,13 @@ package controllers
 
 import (
 	"context"
+	"strconv"
+
 	"github.com/go-logr/logr"
 	predictorv1 "github.com/kserve/modelmesh-serving/apis/serving/v1alpha1"
 	inferenceservicev1 "github.com/kserve/modelmesh-serving/apis/serving/v1beta1"
 	routev1 "github.com/openshift/api/route/v1"
+	virtualservicev1 "istio.io/client-go/pkg/apis/networking/v1alpha3"
 	corev1 "k8s.io/api/core/v1"
 	authv1 "k8s.io/api/rbac/v1"
 	apierrs "k8s.io/apimachinery/pkg/api/errors"
@@ -31,6 +34,10 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/handler"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 	"sigs.k8s.io/controller-runtime/pkg/source"
+)
+
+const (
+	OpendataHubServiceMesh = "opendatahub.io/service-mesh"
 )
 
 // OpenshiftInferenceServiceReconciler holds the controller configuration.
@@ -74,9 +81,26 @@ func (r *OpenshiftInferenceServiceReconciler) Reconcile(ctx context.Context, req
 		return ctrl.Result{}, err
 	}
 
-	err = r.ReconcileRoute(inferenceservice, ctx)
-	if err != nil {
+	// Get InferenceService Namespace
+	namespace := &corev1.Namespace{}
+	err = r.Get(ctx, types.NamespacedName{Name: req.Namespace}, namespace)
+	if err != nil && apierrs.IsNotFound(err) {
+		return ctrl.Result{}, nil
+	} else if err != nil {
 		return ctrl.Result{}, err
+	}
+
+	isServiceMeshEnabled, _ := strconv.ParseBool(namespace.Labels[OpendataHubServiceMesh])
+	if isServiceMeshEnabled {
+		err = r.ReconcileVirtualService(inferenceservice, ctx)
+		if err != nil {
+			return ctrl.Result{}, err
+		}
+	} else {
+		err = r.ReconcileRoute(inferenceservice, ctx)
+		if err != nil {
+			return ctrl.Result{}, err
+		}
 	}
 
 	err = r.ReconcileSA(inferenceservice, ctx)
@@ -94,6 +118,7 @@ func (r *OpenshiftInferenceServiceReconciler) SetupWithManager(mgr ctrl.Manager)
 		Owns(&predictorv1.ServingRuntime{}).
 		Owns(&corev1.Namespace{}).
 		Owns(&routev1.Route{}).
+		Owns(&virtualservicev1.VirtualService{}).
 		Owns(&corev1.ServiceAccount{}).
 		Owns(&corev1.Service{}).
 		Owns(&corev1.Secret{}).
