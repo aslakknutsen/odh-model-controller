@@ -181,6 +181,9 @@ func main() {
 		os.Exit(1)
 	}
 
+	// Add auth check endpoint
+	mgr.AddMetricsExtraHandler("/model/", controllers.NewModelCheck(mgr.GetClient(), ctrl.Log.WithName("controllers").WithName("ModelCheck")))
+
 	setupLog.Info("starting manager")
 	if err := mgr.Start(ctrl.SetupSignalHandler()); err != nil {
 		setupLog.Error(err, "problem running manager")
