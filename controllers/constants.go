@@ -50,4 +50,12 @@ const (
 	// resources to record the VirtualService name that is related to an InferenceService group (model-tag) and was
 	// created to control traffic splitting.
 	VirtualServiceForTrafficSplitAnnotation = "serving.opendatahub.io/vs-traffic-splitting"
+
+	// EnableAuthAnnotation is a Kubernetes annotation set by the InferenceService resource creator to define
+	// if this model require authorization.
+	EnableAuthAnnotation = "enable-auth"
+
+	// EnableRouteAnnotation is a Kubernetes annotation set by the InferenceService resource creator to define
+	// if this model should be exposed on the public network outside of the cluster.
+	EnableRouteAnnotation = "enable-route"
 )

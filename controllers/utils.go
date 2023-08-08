@@ -17,6 +17,7 @@ package controllers
 
 import (
 	"errors"
+
 	v1 "k8s.io/api/core/v1"
 )
 
@@ -29,6 +30,7 @@ func internalModelMeshFQDN(namespace string) string {
 // getIstioGatewaysForNamespace returns the list of gateways that should be associated to a
 // VirtualService to publicly expose InferenceServices living in the specified namespace.
 func getIstioGatewaysForNamespace(namespace *v1.Namespace) ([]string, error) {
+	// TODO: Change to the Project level gateway. New annotation?
 	if gatewayName, gwNameOk := namespace.Annotations[IstioGatewayNameAnnotation]; gwNameOk {
 		return []string{gatewayName}, nil
 	} else {

@@ -420,7 +420,7 @@ func (r *OpenshiftInferenceServiceReconciler) reconcileVirtualService(namespace 
 
 	// Generate the desired VirtualService and expose externally if enabled
 	desiredVirtualService := newVirtualService(inferenceservice)
-	if desiredServingRuntime.Annotations["enable-route"] == "true" {
+	if desiredServingRuntime.Annotations[EnableRouteAnnotation] == "true" {
 		var findGatewayErr error
 		desiredVirtualService.Spec.Gateways, findGatewayErr = getIstioGatewaysForNamespace(namespace)
 		if findGatewayErr != nil {

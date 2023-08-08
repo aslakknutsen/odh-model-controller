@@ -164,11 +164,11 @@ func (r *OpenshiftInferenceServiceReconciler) reconcileRoute(inferenceservice *i
 	desiredServingRuntime := r.findSupportingRuntimeForISvc(ctx, log, inferenceservice)
 
 	enableAuth := true
-	if desiredServingRuntime.Annotations["enable-auth"] != "true" {
+	if desiredServingRuntime.Annotations[EnableAuthAnnotation] != "true" {
 		enableAuth = false
 	}
 	createRoute := true
-	if desiredServingRuntime.Annotations["enable-route"] != "true" {
+	if desiredServingRuntime.Annotations[EnableRouteAnnotation] != "true" {
 		createRoute = false
 	}
 
@@ -184,7 +184,7 @@ func (r *OpenshiftInferenceServiceReconciler) reconcileRoute(inferenceservice *i
 	}, foundRoute)
 	if err != nil {
 		if !createRoute {
-			log.Info("Serving runtime does not have 'enable-route' annotation set to 'True'. Skipping route creation")
+			log.Info("Serving runtime does not have '" + EnableRouteAnnotation + "' annotation set to 'true'. Skipping route creation")
 			return nil
 		}
 		if apierrs.IsNotFound(err) {
@@ -210,7 +210,7 @@ func (r *OpenshiftInferenceServiceReconciler) reconcileRoute(inferenceservice *i
 	}
 
 	if !createRoute {
-		log.Info("Serving Runtime does not have 'enable-route' annotation set to 'True'. Deleting existing route")
+		log.Info("Serving Runtime does not have '" + EnableRouteAnnotation + "' annotation set to 'true'. Deleting existing route")
 		return r.Delete(ctx, foundRoute)
 	}
 	// Reconcile the route spec if it has been manually modified

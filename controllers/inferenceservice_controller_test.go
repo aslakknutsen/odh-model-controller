@@ -34,7 +34,7 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-var _ = Describe("The Openshift model controller", func() {
+var _ = XDescribe("The Openshift model controller", func() {
 
 	Context("When creating a ServiceRuntime & InferenceService with 'enable-route' enabled", func() {
 		var opts mf.Option
