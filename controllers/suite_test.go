@@ -19,16 +19,19 @@ import (
 	"context"
 	"os"
 	"path/filepath"
-	"sigs.k8s.io/yaml"
 	"testing"
 	"time"
 
+	"sigs.k8s.io/yaml"
+
 	kservev1alpha1 "github.com/kserve/kserve/pkg/apis/serving/v1alpha1"
 	kservev1beta1 "github.com/kserve/kserve/pkg/apis/serving/v1beta1"
+	authorinov1beta1 "github.com/kuadrant/authorino/api/v1beta1"
 	monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
 	"go.uber.org/zap/zapcore"
 	k8srbacv1 "k8s.io/api/rbac/v1"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
+	"k8s.io/client-go/kubernetes/scheme"
 	ctrl "sigs.k8s.io/controller-runtime"
 
 	. "github.com/onsi/ginkgo"
@@ -38,7 +41,6 @@ import (
 	istiosecurityv1beta1 "istio.io/client-go/pkg/apis/security/v1beta1"
 	telemetryv1alpha1 "istio.io/client-go/pkg/apis/telemetry/v1alpha1"
 	corev1 "k8s.io/api/core/v1"
-	"k8s.io/client-go/kubernetes/scheme"
 	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
 	maistrav1 "maistra.io/api/core/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -118,6 +120,7 @@ var _ = BeforeSuite(func() {
 	utilruntime.Must(corev1.AddToScheme(scheme.Scheme))
 	utilruntime.Must(istiosecurityv1beta1.AddToScheme(scheme.Scheme))
 	utilruntime.Must(telemetryv1alpha1.AddToScheme(scheme.Scheme))
+	utilruntime.Must(authorinov1beta1.SchemeBuilder.AddToScheme(scheme.Scheme))
 
 	// +kubebuilder:scaffold:scheme
 
