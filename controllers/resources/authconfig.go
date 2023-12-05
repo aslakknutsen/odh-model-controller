@@ -44,12 +44,12 @@ func (r *authConfigHandler) AddHost(ctx context.Context, log logr.Logger, key ty
 	authConfig := &authorinov1beta1.AuthConfig{}
 	err := r.client.Get(ctx, key, authConfig)
 	if err != nil && errors.IsNotFound(err) {
-		log.V(1).Info("AuthConfig not found.")
+		log.V(1).Info("AuthConfig not found", "key", key)
 		return nil
 	} else if err != nil {
 		return err
 	}
-	log.V(1).Info("Successfully fetch deployed AuthConfig")
+	log.V(1).Info("Successfully fetch deployed AuthConfig", "key", key)
 
 	for _, h := range r.extractHosts(host) {
 		found := false
@@ -69,12 +69,12 @@ func (r *authConfigHandler) RemoveHost(ctx context.Context, log logr.Logger, key
 	authConfig := &authorinov1beta1.AuthConfig{}
 	err := r.client.Get(ctx, key, authConfig)
 	if err != nil && errors.IsNotFound(err) {
-		log.V(1).Info("AuthConfig not found.")
+		log.V(1).Info("AuthConfig not found", "key", key)
 		return nil
 	} else if err != nil {
 		return err
 	}
-	log.V(1).Info("Successfully fetch deployed AuthConfig")
+	log.V(1).Info("Successfully fetch deployed AuthConfig", "key", key)
 
 	for _, h := range r.extractHosts(host) {
 		foundIndex := -1
